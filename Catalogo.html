@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <title>Filmes</title>
+</head>
+ 
+<body onload="listar()">
+
+    <nav class="navbar navbar-expend-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"></button>
+        <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+
+                <li class="nav-item active"> 
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Categorias</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Filmes</a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+
+        <div class="jumbotron jumbotron-fluid">
+            <div class="container">
+                <h1 class="display-4">Filmes</h1>
+                <p class="lead">Cadastre e visualize filmes cadastrados</p>
+            </div>
+        </div>
+
+
+        <div class="container">
+            <div class="bd-example">    
+                <form id="formFilme">
+                    <input type="hidden" id="filmeId" value = "" />
+
+                    <div class="form-group">
+                        <label for="nome">Nome</label>
+                        <label type="text" class="form-control" id="nome" aria-placeholder="nome" placeholder="Informe o nome"></label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoria">Categoria</label>
+                        <input type="text" class="form-control" id="categoria" placeholder="Informe a Categoria do filme">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ano">Ano de Lançamento</label>
+                        <input type="text" class="form-control small" id="anoLancamento" placeholder="Informe o ano de lançamento">
+                    </div>
+
+                    <button type="button" onclick="limparCampos()" class="btn btn-secondary">Cancelar</button>
+                    <button type="button" onclick="salvar()" class="btn btn-sucess">Salvar</button>
+                </form>
+
+                <table class="table" style="margin-top: 40px;">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Nome</th>
+                            <th scope="col">Categoria</th>
+                            <th scope="col">Ano Lançamento</th>
+                            <th scope="col">Ações</th>
+                            <th scope="col"><button type="reset" class="btn btn-primary" onclick="limparCampos()">Novo Filme</button></th>
+                        </tr>
+                    </thead>
+                </table>
+                <tbody id="tabela-listar"></tbody>
+            </div>
+
+        </div>
+
+        <script>
+            let url = 'https://5f91b8e2eca67c0016408f90.mockapi.io/api/fimes';
+
+            const listar= () => {
+                fetch(url,{
+                    method : 'GET'
+                })
+
+                .then(response => response.jason())
+                .then(dados => {
+                    preencherTabela(dados);
+                    limparCampos();
+                })
+                .catch(err => console.error(err))
+            }
+
+            const preencherTabela = (dados) => {
+
+                let corpoTabela = document.querySelector('#tabela-listar-corpo');
+
+                corpoTabela.innerHTML = "";
+                let linha, colunaId, colunaNome, colunaCategoria, colunaAnoLancamento, colunaAcao;
+
+                dados.forEach(item => {
+                    linha = document.createElement("tr")
+                    colunaId = document.createElement("td")
+                    colunaId.innerText = item.id;
+
+                    colunaNome = document.createElement("tr")
+                    colunaNome.innerText = item.nome;
+
+                    colunaCategoria = document.createElement("tr")
+                    colunaCategoria.innerText = item.categoria;
+
+                    colunaAnoLancamento = document.createElement("tr")
+                    colunaAnoLancamento.innerText = item.anoLancamento;
+
+                    colunaAcao = document.createElement("td")
+
+                    //Remove
+                    let btnRemover = document.createElement("input");
+
+                    btnRemover.type = "button";
+                    btnRemover.value = "Remover";
+                    btnRemover.className = "btn btn-danger";
+                    btnRemover.setAttribute("onclick", "remover(" + item.id + ")")
+
+                    //Edita
+                    let btnEditar = document.createElement("input");
+                    btnEditar.type = "button";
+                    btnEditar.value = "Editar";
+                    btnEditar.className = "btn btn-sucess";
+                    btnEditar.style.marginLeft = "20px";
+                    btnEditar.setAttribute("onclick", "editar(" + item.id + ")")
+
+                    //Coluna
+                    colunaAcao.appendChild(btnRemover);
+                    colunaAcao.appendChild(btnEditar);
+
+                    //Linha
+                    linha.appendChild(colunaId);
+                    linha.appendChild(colunaNome);
+                    linha.appendChild(colunaCategoria);
+                    linha.appendChild(colunaAnoLancamento);
+                    linha.appendChild(colunaAcao);
+
+                    corpoTabela.appendChild(linha);
+
+                })
+            }
+
+            //Remover
+            const remover = (id) => {
+                fetch(url + '/' + id, {
+                    method : "DELETE"
+                })
+                .then(response => response.jason())
+                .then(dados => {
+                    
+                    alert('Filme Removido');
+                    listar();
+                })
+                .catch(err => console.error(err))
+            }
+            //Editar
+            const editar = (id) => {
+                fetch(url + '/' + id)
+                .then(response => response.json)
+                .then(dado => {
+                    document.querySelector('#filmeId').value = dado.id;
+                    document.querySelector('#nome').value = dado.nome;
+                    document.querySelector('#categoria').value = dado.categoria;
+                    document.querySelector('#anoLancamento').value = dado.anoLancamento;
+                })
+                .catch(err => console.error(err))
+            }
+            //Limpar Campos
+            const limparCampos = () => {
+                document.querySelector('#formFilme').reset();
+                document.querySelector('#filmeId').value = "";
+                document.querySelector('#nome').focus();
+            }
+
+           const salvar = () => {
+               event.preventDefault();
+
+               const filme = {
+                   nome : document.querySelector('#nome').value,
+                   categoria : document.querySelector('#categoria').value,
+                   anoLacamento : document.querySelector('#anoLancamento').value
+            }
+
+            //Pegamos o valor do campo filme
+            let filmeId = document.querySelector('#filmeId').value;
+            
+            let method = (filmeId === "" ? 'POST' : 'PUT')
+            let urlRequest = (filmeId === "" ? url : url + '/' + filmeId);
+
+            fetch(urlRequest, {
+                method : method,
+                body : JSON.stringify(filme),
+                headers : {
+                    'content-type' : 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(dado => {
+              alert('Filme salvo')
+
+              listar()
+            })
+            .catch(err => console.error(err))
+               
+           }
+
+        </script>
+
+
+    </body>
+</html>
